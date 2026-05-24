@@ -1,8 +1,7 @@
 {
   "framework": "vite",
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": "frontend/dist",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "regions": ["sin1"]
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
+  "installCommand": "",
+  "devCommand": "npm run dev"
 }

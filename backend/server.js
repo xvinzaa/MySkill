@@ -5,8 +5,6 @@ const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 
 dotenv.config();
-
-// Connect to MongoDB
 connectDB();
 
 const app = express();
@@ -16,15 +14,11 @@ const corsOptions = {
     const allowedOrigins = [
       'https://my-skill-one.vercel.app',
       'http://localhost:3000',
+      'http://localhost:5173',
       'http://127.0.0.1:5173',
       process.env.FRONTEND_URL
     ].filter(Boolean);
-
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(null, true);
-    }
+    callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -35,54 +29,34 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({ message: 'My Skill API is running', status: 'healthy' });
+  res.json({ message: 'My Skill API is running' });
 });
 
-// Health check with database
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/contents', require('./routes/contentRoutes'));
+
+// Health check - placed AFTER routes to avoid being overridden
 app.get('/api/health', async (req, res) => {
   try {
-    const mongoose = require('mongoose');
-    const state = mongoose.connection.readyState;
-    const states = {
-      0: 'disconnected',
-      1: 'connected',
-      2: 'connecting',
-      3: 'disconnecting'
-    };
+    const User = require('./models/User');
+    const Content = require('./models/Content');
+    const userCount = await User.countDocuments();
+    const contentCount = await Content.countDocuments();
 
-    if (state === 1) {
-      const User = require('./models/User');
-      const Content = require('./models/Content');
-      const userCount = await User.countDocuments();
-      const contentCount = await Content.countDocuments();
-
-      res.json({
-        status: 'healthy',
-        database: states[state],
-        counts: {
-          users: userCount,
-          contents: contentCount
-        }
-      });
-    } else {
-      res.json({
-        status: 'unhealthy',
-        database: states[state],
-        message: 'Database not connected'
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: error.message
+    res.json({
+      status: 'healthy',
+      database: 'connected',
+      counts: { users: userCount, contents: contentCount }
     });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
   }
 });
 
-// Seed endpoint - DEFINE FIRST
+// Seed endpoint - at the end
 app.post('/api/seed', async (req, res) => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
     const Content = require('./models/Content');
 
     const contents = [
@@ -256,22 +230,12 @@ app.post('/api/seed', async (req, res) => {
   }
 });
 
-// Routes AFTER seed endpoint
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/contents', require('./routes/contentRoutes'));
-
-// Error handlers
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
-});
-
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

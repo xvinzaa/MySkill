@@ -1,0 +1,24 @@
+# Render Blueprint
+# Deploy backend to Render
+
+services:
+  - type: web
+    name: my-skill-api
+    env: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: FRONTEND_URL
+        value: https://my-skill-frontend.vercel.app
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true

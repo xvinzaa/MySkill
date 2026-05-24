@@ -1,0 +1,26 @@
+{
+  "framework": null,
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "installCommand": "cd backend && npm install",
+  "regions": ["singapore"],
+  "functions": {
+    "backend/server.js": {
+      "runtime": "nodejs18.x",
+      "memory": 512,
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/server.js"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "@vite_api_url",
+    "MONGO_URI": "@mongo_uri",
+    "JWT_SECRET": "@jwt_secret",
+    "NODE_ENV": "production"
+  }
+}

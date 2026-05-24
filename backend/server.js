@@ -2,7 +2,6 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const connectDB = require('./config/db');
 
 dotenv.config();
 
@@ -35,12 +34,10 @@ app.get('/', (req, res) => {
   res.json({ message: 'My Skill API is running', status: 'healthy' });
 });
 
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/contents', require('./routes/contentRoutes'));
-
-// Seed endpoint
+// Seed endpoint - DEFINE FIRST
 app.post('/api/seed', async (req, res) => {
   try {
+    await mongoose.connect(process.env.MONGO_URI);
     const Content = require('./models/Content');
 
     const contents = [
@@ -214,6 +211,11 @@ app.post('/api/seed', async (req, res) => {
   }
 });
 
+// Routes AFTER seed endpoint
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/contents', require('./routes/contentRoutes'));
+
+// Error handlers
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Something went wrong!' });

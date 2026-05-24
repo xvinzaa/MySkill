@@ -19,6 +19,6 @@ services:
       - key: FRONTEND_URL
         value: https://my-skill-frontend.vercel.app
       - key: MONGO_URI
-        sync: false
+        value: mongodb+srv://vincentvrza_db_user:JSYost2ZS1WwNc3G@cluster0.vkxoezx.mongodb.net/?appName=Cluster0
       - key: JWT_SECRET
-        generateValue: true
+        value: my-skill-jwt-secret-2024-production

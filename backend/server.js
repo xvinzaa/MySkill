@@ -34,6 +34,47 @@ app.get('/', (req, res) => {
   res.json({ message: 'My Skill API is running', status: 'healthy' });
 });
 
+// Health check with database
+app.get('/api/health', async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const state = mongoose.connection.readyState;
+    const states = {
+      0: 'disconnected',
+      1: 'connected',
+      2: 'connecting',
+      3: 'disconnecting'
+    };
+
+    if (state === 1) {
+      const User = require('./models/User');
+      const Content = require('./models/Content');
+      const userCount = await User.countDocuments();
+      const contentCount = await Content.countDocuments();
+
+      res.json({
+        status: 'healthy',
+        database: states[state],
+        counts: {
+          users: userCount,
+          contents: contentCount
+        }
+      });
+    } else {
+      res.json({
+        status: 'unhealthy',
+        database: states[state],
+        message: 'Database not connected'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+});
+
 // Seed endpoint - DEFINE FIRST
 app.post('/api/seed', async (req, res) => {
   try {
